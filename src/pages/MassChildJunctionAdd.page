@@ -1,0 +1,87 @@
+<apex:page>
+
+	<!-- Javascript -->
+	<apex:includescript value="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"/>
+	
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/safeApply.js')}"/>				
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/restangular.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/lo-dash.compat.js')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce-visualForceRemoting.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce-encodedUriQuery.js')}"/>
+
+	<!-- some extra useful angular ui widgets, like tabs and datepicker. -->
+	<!-- <apex:includescript value="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.min.js"/> -->
+
+	<!-- momentJs, handy for JS remoting date issues -->
+	<!-- <apex:includescript value="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js"/> -->
+
+	<!--url parameters from Button-->
+	
+	<!-- 
+	parentId: the recordId of the parent that we're adding all these junction children to
+	otherObject: the object type of the junctions other parent(include the __c if custom)
+	junctionObject: the object type of the junction object
+	field1, field2, field3: the fields to show on the list of otherObject.  Include __c if custom
+	orderyBy field: sort for list of otherObject.  Include__c if custom 
+	-->
+
+
+
+	<div class="" ng-app="massAdd" id="ng-app" xmlns:ng="http://angularjs.org">
+		<div class="" ng-controller="massAddController">
+			<apex:pageBlock title="Add Questions">
+				<apex:pageBlockButtons>
+					<button ng-click="Add()">Add to Questionnaire</button>
+				</apex:pageBlockButtons>
+				<div ng-repeat="question in questions | orderBy:'Name'">
+					<input type="checkbox" ng-model="question.selected"/>
+					{{question.Name}} 
+					{{question.Question_Text__c}}
+				</div>
+				
+			</apex:pageBlock>
+		</div>
+	</div>
+
+	
+
+	<script type="text/javascript">
+		var myModule = angular.module('massAdd', ['ngForce'] );
+
+		function massAddController($scope, vfr){
+			//I'm bringing questions back
+			vfr.query("Select Id, Name, Question_Text__c from MCJA_Question_Text__c limit 49999").then(
+				function (response){
+					$scope.questions = response.records;
+				},
+				function (error){
+					console.log(error);
+				}
+			);
+
+			//we are the children
+			$scope.Add = function(){
+				var children = {};
+				angular.forEach($scope.questions, function(value, key){
+					if (value.selected){
+						children[key]=
+							{
+								"Questionnaire__c" : "{!$CurrentPage.Parameters.questionnaireId}",
+								"Question_Number__c" : value.Id 
+							}
+					}
+				});
+				vfr.bulkCreate("Questionnaire_Item__c", JSON.stringify(children))
+				.then(
+					function (response){
+						window.location = '../{!$CurrentPage.Parameters.questionnaireId}';
+					},
+					function (error){console.log(error);}
+				);
+			}
+		};
+	</script>
+	<c:ngforce /> <!-- Include this to make sure the controller gets instantiated -->
+</apex:page>
