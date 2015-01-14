@@ -1,0 +1,182 @@
+<apex:page>
+
+	<!-- example button code
+	/apex/MassChildJunctionAddParameterized 
+	?ParentId={!MCJA_Questionnaire__c.Id} //record Id for the parent, usually as merge field on a button/link
+	&OtherParentObject=MCJA_Question_Text__c //the sObject that's not the parent we're starting from
+	&LookupToMainParent=Questionnaire__c  //from the children, what field is the lookup to Parent #1
+	&LookupToSecondParent=Question_Number__c //from the children, what field is the lookup to Parent #2
+	&ChildObject=MCJA_Questionnaire_Item__c //the sObject being created
+	&QueryField1=Question_Text__c //do you want more fields than just name?  add here
+	&QueryLabel1=Text // what label the fields get in the table.--> 
+
+	<!-- Javascript -->
+	<apex:includescript value="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.min.js"/>
+	
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/safeApply.js')}"/>				
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/restangular.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'lib/lo-dash.compat.js')}"/>
+
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce-visualForceRemoting.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.NgForce, 'jsSrc/ngForce-encodedUriQuery.js')}"/>
+
+	<link rel="stylesheet" href="{!URLFOR($Resource.bootstrapNamespaced, 'dist/css/bootstrap.css')}" media="all" />
+
+	<div class="" ng-app="massAdd" id="ng-app" xmlns:ng="http://angularjs.org">
+		<div ng-controller="massAddController" class="bs">
+			<div class="container-fluid">
+				<div class="row">
+					
+					<div class="col-sm-1">
+						<div class="btn btn-primary" ng-click="Add()">Add</div>
+					</div>
+						
+					<div class="col-sm-11">
+						<input ng-model="searchString" class="form-control" placeholder="quick search"/>
+					</div>
+					
+					<div class="col-md-12">
+						
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>
+										<input type="checkbox" ng-model="data.allStatus" ng-change="selectAllFilteredItems()"/> All
+									</th>
+									<th>Name</th>
+									<th ng-if="data.QueryField1">{{data.QueryLabel1}}</th>
+									<th ng-if="data.QueryField2">{{data.QueryLabel2}}</th>
+									<th ng-if="data.QueryField3">{{data.QueryLabel3}}</th>
+									<th ng-if="data.QueryField4">{{data.QueryLabel4}}</th>
+
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="option in options | filter:searchString | orderBy:'Name'">
+									<td>
+										<input type="checkbox" ng-model="option.selected"/>
+									</td>
+									<td>
+										{{option.Name}}
+									</td>
+									<td ng-if="data.QueryField1">
+										{{option[data.QueryField1]}}
+									</td>
+									<td ng-if="data.QueryField2">
+										{{option[data.QueryField2]}}
+									</td>
+									<td ng-if="data.QueryField3">
+										{{option[data.QueryField3]}}
+									</td>
+									<td ng-if="data.QueryField4">
+										{{option[data.QueryField4]}}
+									</td>
+								</tr>
+
+							</tbody>
+
+						</table>
+						
+					</div>
+						
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	
+	
+
+	<script type="text/javascript">
+		var myModule = angular.module('massAdd', ['ngForce'] );
+
+		function massAddController($scope, $filter, vfr){
+			var filter = $filter('filter');
+			//parameter and initial value setup
+			$scope.data={
+
+				allStatus : false,
+				
+				MainParentId: "{!$CurrentPage.Parameters.MainParentId}",
+				OtherParentLabel: '{!$CurrentPage.Parameters.OtherParentLabel}',
+				MainParentLabel: '{!$CurrentPage.Parameters.MainParentLabel}',
+				LookupToMainParent: '{!$CurrentPage.Parameters.LookupToMainParent}',
+				LookupToSecondParent: '{!$CurrentPage.Parameters.LookupToSecondParent}',
+				OtherParentObject: '{!$CurrentPage.Parameters.OtherParentObject}',
+				ChildObject: '{!$CurrentPage.Parameters.ChildObject}',
+
+				//completely optional from here down on parameters
+				QueryField1: '{!$CurrentPage.Parameters.QueryField1}',
+				QueryField2: '{!$CurrentPage.Parameters.QueryField2}',
+				QueryField3: '{!$CurrentPage.Parameters.QueryField3}',
+				QueryField4: '{!$CurrentPage.Parameters.QueryField4}',
+				QueryLabel1: '{!$CurrentPage.Parameters.QueryLabel1}',
+				QueryLabel2: '{!$CurrentPage.Parameters.QueryLabel2}',
+				QueryLabel3: '{!$CurrentPage.Parameters.QueryLabel3}',
+				QueryLabel4: '{!$CurrentPage.Parameters.QueryLabel4}'
+			};
+			console.log($scope.data);
+
+			var QueryBuilder = function(){
+				var query = "Select Id, Name";
+				if ($scope.data.QueryField1){
+					query = query + ", " + $scope.data.QueryField1;
+				}
+				if ($scope.data.QueryField2){
+					query = query + ", " + $scope.data.QueryField2;
+				}
+				if ($scope.data.QueryField3){
+					query = query + ", " + $scope.data.QueryField3;
+				}
+				if ($scope.data.QueryField4){
+					query = query + ", " + $scope.data.QueryField4;
+				}
+				query = query + " from " + $scope.data.OtherParentObject + " limit 49999";
+				return query;
+			}		
+
+			var q = QueryBuilder();
+
+			vfr.query(q)
+				.then(
+					function (response){
+						$scope.options = response.records;
+					},
+					function (error){
+						console.log(error);
+					}
+				);	
+
+			$scope.Add = function(){
+				var children = {};
+				angular.forEach($scope.options, function(value, key){
+					if (value.selected){
+						children[key]={};
+						children[key][$scope.data.LookupToMainParent] = $scope.data.MainParentId;
+						children[key][$scope.data.LookupToSecondParent] = value.Id;
+					}
+				});
+				console.log(children);
+				vfr.bulkCreate($scope.data.ChildObject, JSON.stringify(children))
+				.then(
+					function (response){
+						window.location = '../'+$scope.data.MainParentId;
+					},
+					function (error){console.log(error);}
+				);
+			}
+
+			$scope.selectAllFilteredItems = function (){
+		    	var filtered = filter($scope.options, $scope.searchString);
+				
+				angular.forEach(filtered, function(item) {
+					item.selected = $scope.data.allStatus;
+				});
+			};
+
+		};
+	</script>
+	<c:ngforce /> <!-- Include this to make sure the controller gets instantiated -->
+</apex:page>
