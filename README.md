@@ -16,6 +16,14 @@ So obviously re-using the questions saves the user work, but the process of addi
 
 So what I made was a visualforce page to list all the optional questions, check their boxes, and then hit the add button.
 
+
+###New Version
+see the page called ![MassChildJunctionAddParameterized](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAddParameterized.page)
+
+
+
+###Older Version 
+(see the page called ![MassChildJunctionAdd](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAdd.page))
 ![Mass Add Questions Page](https://dl.dropboxusercontent.com/u/8451460/salesforce%20blog/Mass%20Child%20Junction%20Add.png)
 
 For nicety, I did these using some of the standard VF components (pageblock, buttons, etc).  You probably won't want to do that if your intent is to do this in the Salesforce1 mobile app.
