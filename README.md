@@ -1,6 +1,10 @@
 sf-mass-child-junction
 ======================
 
+<a href="https://githubsfdeploy.herokuapp.com?owner=mshanemc&repo=sf-mass-child-junction">
+  <img alt="Deploy to Salesforce"
+       src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
+</a>
 
 In my example, I have a questionnaire, and a list of potential questions.  User can build the questionnaire by joining the pre-built questions to the questionnaire using this junction object (questionnaire item).
 
@@ -18,12 +22,12 @@ So what I made was a visualforce page to list all the optional questions, check 
 
 
 ###New Version
-see the page called ![MassChildJunctionAddParameterized](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAddParameterized.page)
+see the page called [MassChildJunctionAddParameterized](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAddParameterized.page)
 
 
 
 ###Older Version 
-(see the page called ![MassChildJunctionAdd](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAdd.page))
+(see the page called [MassChildJunctionAdd](https://github.com/mshanemc/sf-mass-child-junction/blob/master/src/pages/MassChildJunctionAdd.page))
 ![Mass Add Questions Page](https://dl.dropboxusercontent.com/u/8451460/salesforce%20blog/Mass%20Child%20Junction%20Add.png)
 
 For nicety, I did these using some of the standard VF components (pageblock, buttons, etc).  You probably won't want to do that if your intent is to do this in the Salesforce1 mobile app.
